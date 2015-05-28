@@ -1,0 +1,23 @@
+<?php
+
+class EsdportalApiWebTestCase extends DrupalWebTestCase {
+
+  public function setUp() {
+    $modules = func_get_args();
+    if (isset($modules[0]) && is_array($modules[0])) {
+      $modules = $modules[0];
+    }
+
+    // Add the required module dependencies.
+    array_unshift($modules, 'ctools', 'services', 'rest_server');
+
+    parent::setUp($modules);
+    // Use a cookie file, so login sessions will survive, even if we
+    // reinitialize Curl.
+    $this->cookieFile = drupal_tempnam(variable_get('file_temporary_path'), 'services_cookiejar');
+    // Load the cookie file when initializing Curl.
+    $this->additionalCurlOptions[CURLOPT_COOKIEFILE] = $this->cookieFile;
+  }
+
+}
+

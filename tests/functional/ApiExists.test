@@ -1,0 +1,45 @@
+<?php
+
+class ApiExists extends EsdportalApiWebTestCase {
+
+  public function setUp() {
+    $modules = func_get_args();
+    if (isset($modules[0]) && is_array($modules[0])) {
+      $modules = $modules[0];
+    }
+
+    // Add the required module dependencies.
+    array_unshift($modules, 'ctools', 'services', 'rest_server', 'esdportal_str');
+
+    parent::setUp($modules);
+    // Use a cookie file, so login sessions will survive, even if we
+    // reinitialize Curl.
+    $this->cookieFile = drupal_tempnam(variable_get('file_temporary_path'), 'services_cookiejar');
+    // Load the cookie file when initializing Curl.
+    $this->additionalCurlOptions[CURLOPT_COOKIEFILE] = $this->cookieFile;
+  }
+
+  /**
+   * Implementation of getInfo().
+   */
+  public static function getInfo() {
+    return array(
+      'name'        => 'Check that the API exists',
+      'description' => 'Test basic characteristics of the ESD Portal API.',
+      'group'       => 'esdportal_api',
+    );
+  }
+
+  public function testApiExists() {
+    // load our services definition
+    module_load_include('inc', 'esdportal_str', 'esdportal_str.services');
+
+    $endpoint_export = esdportal_str_default_services_endpoint();
+    services_endpoint_save($endpoint_export['schools']);
+    $endpoint = services_endpoint_load($endpoint_export->name);
+    $this->assertTrue($endpoint->name == 'schools', 'Schools API exists');
+    return $endpoint;
+  }
+
+}
+
